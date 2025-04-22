@@ -80,12 +80,11 @@ Built with Python and Streamlit, this application ensures a user-friendly experi
    ```bash
    git clone https://github.com/Lsam18/ai-soc-summary-SentinelX.git
    cd ai-soc-summary-SentinelX
-Here is the additional section you requested, formatted properly in markdown code for your GitHub README:
 
-```markdown
 or the directory name after it gets downloaded!
 
 ### Install Required Packages:
+```
 ```bash
 pip install streamlit pandas plotly reportlab seaborn matplotlib numpy
 ```
