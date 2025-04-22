@@ -60,11 +60,14 @@ Built with Python and Streamlit, this application offers a user-friendly interfa
 
 ## Screenshots
 
-![Dashboard View](screenshots/dashboard.png)
+![Dashboard View](screenshots/dashboard1.png)
 *Comprehensive dashboard with data overview and visualizations*
 
 ![Report Generation](screenshots/report.png)
 *Customizable PDF report generation interface*
+
+![User Interface](screenshots/ui.png)
+*User interface*
 
 ## Installation
 
