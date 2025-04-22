@@ -143,14 +143,4 @@ We welcome contributions from the security community! Here's how you can help:
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
-## Contact
-
-For questions or suggestions, please open an issue on GitHub or contact:
-
-Your Name - [@yourtwitter](https://twitter.com/yourtwitter) - your.email@example.com
-
-Project Link: [https://github.com/Lsam18/soc-csv-analyzer](https://github.com/yourusername/soc-csv-analyzer)
-
----
-
-🛡️ **Empowering SOC Teams with Better Data Analysis** 📊
+**Empowering SOC Teams with Better Data Analysis**
