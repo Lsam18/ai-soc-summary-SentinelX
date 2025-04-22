@@ -78,8 +78,8 @@ Built with Python and Streamlit, this application offers a user-friendly interfa
 ### Steps
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/soc-csv-analyzer.git
-   cd soc-csv-analyzer
+   git clone https://github.com/Lsam18/ai-soc-summary-SentinelX.git
+   cd ai-soc-summary-SentinelX
    ```
 
 2. Install required packages:
@@ -89,7 +89,7 @@ Built with Python and Streamlit, this application offers a user-friendly interfa
 
 3. Run the application:
    ```bash
-   streamlit run soc_csv_analyzer.py
+   streamlit run ai-soc-summary-SentinelX.py
    ```
 
 4. Access the application in your browser at `http://localhost:8501`
