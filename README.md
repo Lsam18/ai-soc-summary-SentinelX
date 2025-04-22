@@ -85,7 +85,6 @@ or the directory name after it gets downloaded!
 
 ### Install Required Packages:
 ```
-```bash
 pip install streamlit pandas plotly reportlab seaborn matplotlib numpy
 ```
 
