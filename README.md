@@ -14,6 +14,7 @@
 
 ## Overview
 
+<<<<<<< HEAD
 SOC CSV Analyzer Pro is a powerful web application designed for security professionals to analyze, visualize, and report on security-related CSV data. Tailored for Security Operations Center (SOC) teams, this tool provides:
 
 - Comprehensive data analysis capabilities
@@ -22,10 +23,21 @@ SOC CSV Analyzer Pro is a powerful web application designed for security profess
 - Multi-file analysis in a single interface
 
 Built with Python and Streamlit, this application ensures a user-friendly experience with a security-focused interface, making it an ideal solution for SOC analysts seeking in-depth insights from their data.
+=======
+SOC CSV Analyzer Pro is a robust web application designed for security professionals to analyze, visualize, and report on security-related CSV data. This tool provides SOC teams with:
+
+- Comprehensive data analysis capabilities
+- Advanced visualization options
+- Professional PDF report generation
+- Multi-file analysis in a single interface
+
+Built with Python and Streamlit, this application offers a user-friendly interface with security-focused features tailored for SOC analysts.
+>>>>>>> d759609 (Ui Changes and Funtionality improvement: features)
 
 ## Key Features
 
 ### 🔍 Data Management
+<<<<<<< HEAD
 - **Upload and Combine Multiple CSV Files**: Seamlessly analyze data from multiple sources.
 - **Interactive File Selection Interface**: Intuitive file management for efficient workflow.
 - **Automatic Data Type Detection**: Automatically detects and categorizes data types for accurate analysis.
@@ -68,6 +80,50 @@ Built with Python and Streamlit, this application ensures a user-friendly experi
 
 ![User Interface](screenshots/ui.png)  
 *User-friendly interface tailored for SOC teams*
+=======
+- Upload and combine multiple CSV files
+- Interactive file selection interface
+- Automatic data type detection
+- Missing value analysis
+
+### 📈 Advanced Analysis
+- Descriptive statistics for all numeric columns
+- Categorical data frequency analysis
+- Correlation matrix visualization
+- Basic anomaly detection using z-scores
+- Time series analysis (for datetime columns)
+
+### 📊 Interactive Visualizations
+- Histograms, box plots, and violin plots
+- Scatter plots with color coding
+- Pie charts for categorical data
+- Correlation heatmaps
+- Anomaly visualization
+
+### 📑 Professional Reporting
+- Customizable PDF reports
+- Multiple report sections to choose from
+- Automatic table generation
+- Embedded visualizations
+- SOC-focused formatting
+
+### 🛡️ SOC-Specific Features
+- Security-focused UI design
+- Anomaly detection alerts
+- Combined log analysis
+- Professional report templates
+
+## Screenshots
+
+![Dashboard View](screenshots/dashboard1.png)
+*Comprehensive dashboard with data overview and visualizations*
+
+![Report Generation](screenshots/report.png)
+*Customizable PDF report generation interface*
+
+![User Interface](screenshots/ui.png)
+*User interface*
+>>>>>>> d759609 (Ui Changes and Funtionality improvement: features)
 
 ## Installation
 
@@ -80,6 +136,7 @@ Built with Python and Streamlit, this application ensures a user-friendly experi
    ```bash
    git clone https://github.com/Lsam18/ai-soc-summary-SentinelX.git
    cd ai-soc-summary-SentinelX
+<<<<<<< HEAD
 
 or the directory name after it gets downloaded!
 
@@ -115,6 +172,42 @@ Access the application in your browser at `http://localhost:8501`.
 ## Report Customization
 
 The PDF report can be customized by selecting or deselecting the following sections:
+=======
+   ```
+
+2. Install required packages:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Run the application:
+   ```bash
+   streamlit run ai-soc-summary-SentinelX.py
+   ```
+
+4. Access the application in your browser at `http://localhost:8501`
+
+## Usage
+
+1. **Upload Files**:
+   - Click "Upload CSV files" in the sidebar
+   - Select one or more CSV files from your system
+
+2. **Analyze Data**:
+   - View dataset overview and statistics
+   - Explore different visualizations in the tabs
+   - Use anomaly detection for potential security events
+
+3. **Generate Reports**:
+   - Select which sections to include
+   - Customize the report title
+   - Click "Generate PDF Report"
+   - Download the professional PDF
+
+## Report Customization
+
+The PDF report can be customized by selecting/deselecting sections:
+>>>>>>> d759609 (Ui Changes and Funtionality improvement: features)
 - Dataset Overview
 - Statistical Analysis
 - Visualizations
@@ -134,12 +227,25 @@ We welcome contributions from the security community! Here's how you can help:
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
+<<<<<<< HEAD
 ### Areas for Contribution:
 - Additional visualization types (e.g., network traffic graphs)
 - Enhanced anomaly detection algorithms
 - More report templates specific to SOC use cases
 - SOC-specific analysis features, such as intrusion detection analysis
+=======
+### Areas for Contribution
+- Additional visualization types
+- Enhanced anomaly detection algorithms
+- More report templates
+- SOC-specific analysis features
+>>>>>>> d759609 (Ui Changes and Funtionality improvement: features)
 
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
+<<<<<<< HEAD
+=======
+
+**Empowering SOC Teams with Better Data Analysis**
+>>>>>>> d759609 (Ui Changes and Funtionality improvement: features)
