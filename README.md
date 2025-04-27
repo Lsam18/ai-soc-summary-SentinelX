@@ -1,8 +1,3 @@
-Got it — you meant **the *code version* of a README**, like literally **in markdown syntax**, ready to paste into a `README.md` file (not just the rendered look).
-
-Here’s the exact **README.md** (raw markdown):
-
-```markdown
 # SOC CSV Analyzer Pro 🛡️📊
 
 **Professional CSV Analysis and Reporting Tool for Security Operations Centers**
