@@ -16,6 +16,7 @@ from matplotlib.colors import LinearSegmentedColormap
 import base64
 import re
 import os
+from reportlab.platypus import PageBreak
 
 # Set page config with professional SOC theme
 st.set_page_config(
@@ -471,7 +472,7 @@ def detect_sensitive_columns(df):
 # App header
 st.markdown("""
     <div class="header">
-        <h1>🛡️ SOC Analyzer Pro</h1>
+        <h1>🛡️ SOC Analyzer Pro - SentinelX</h1>
         <p class="subheader">Enterprise Security Data Analysis & Threat Intelligence Platform</p>
     </div>
 """, unsafe_allow_html=True)
@@ -941,406 +942,830 @@ else:
                 st.plotly_chart(fig, use_container_width=True)
     
     with tab4:
-        # Report generation
-        st.markdown("### Professional Report Generation")
-        
-        # Report options
-        report_options = st.multiselect(
-            "Select report sections to include",
-            ["Executive Summary", "Dataset Overview", "Threat Analysis", 
-             "Anomaly Detection", "Key Visualizations", "Detailed Findings",
-             "Recommendations", "Full Data Sample"],
-            default=["Executive Summary", "Dataset Overview", "Threat Analysis", "Key Visualizations"]
+    # Report generation
+        st.markdown("### Professional SOC Report Generation")
+    
+    # Report sections with better descriptions
+    report_sections = {
+        "Executive Summary": "High-level overview of findings and key metrics",
+        "Dataset Overview": "Detailed statistics about the analyzed dataset",
+        "Threat Analysis": "Detailed examination of identified threats and IOCs",
+        "Anomaly Detection": "Statistical anomalies and potential security events",
+        "Timeline Analysis": "Chronological patterns and event frequency",
+        "Source/Destination Analysis": "Top talkers and communication patterns",
+        "Correlation Findings": "Relationships between different security events",
+        "Threat Intelligence": "Matching against known threat databases",
+        "Recommendations": "Actionable security recommendations",
+        "Appendix": "Supporting data and technical details"
+    }
+    
+    # Default selected sections
+    default_sections = [
+        "Executive Summary",
+        "Dataset Overview",
+        "Threat Analysis",
+        "Anomaly Detection",
+        "Recommendations"
+    ]
+    
+    # Report options
+    report_options = st.multiselect(
+        "Select report sections to include",
+        list(report_sections.keys()),
+        default=default_sections,
+        format_func=lambda x: f"{x} - {report_sections[x]}"
+    )
+    
+    # Report metadata
+    col1, col2 = st.columns(2)
+    with col1:
+        report_title = st.text_input("Report Title", "SOC Threat Analysis Report")
+        client_name = st.text_input("Client/Organization Name", "Acme Corporation")
+    with col2:
+        report_author = st.text_input("Author", "Security Operations Center")
+        report_classification = st.selectbox(
+            "Classification",
+            ["UNCLASSIFIED", "CONFIDENTIAL", "RESTRICTED", "SECRET"],
+            index=1
         )
-        
-        # Report metadata
-        col1, col2 = st.columns(2)
-        with col1:
-            report_title = st.text_input("Report Title", "Security Data Analysis Report")
-        with col2:
-            report_author = st.text_input("Author", "SOC Team")
-        
-        # Generate report button
-        if st.button("🖨️ Generate Comprehensive Report", type="primary"):
-            with st.spinner("Generating professional report..."):
-                try:
-                    # Create PDF buffer
-                    buffer = BytesIO()
+    
+    # Generate report button
+    if st.button("🖨️ Generate Comprehensive SOC Report", type="primary"):
+        with st.spinner("Generating professional SOC report..."):
+            try:
+                # Create PDF buffer
+                buffer = BytesIO()
+                
+                # Custom styles
+                styles = getSampleStyleSheet()
+                
+                # Add custom SOC report styles
+                styles.add(ParagraphStyle(
+                    name='CoverTitle',
+                    fontSize=24,
+                    leading=30,
+                    alignment=1,  # CENTER
+                    spaceAfter=24,
+                    textColor=colors.HexColor('#1a3e72'),
+                    fontName='Helvetica-Bold'
+                ))
+                
+                styles.add(ParagraphStyle(
+                    name='CoverSubtitle',
+                    fontSize=14,
+                    leading=18,
+                    alignment=1,
+                    spaceAfter=36,
+                    textColor=colors.HexColor('#4a6fa5'),
+                    fontName='Helvetica'
+                ))
+                
+                styles.add(ParagraphStyle(
+                    name='Heading1SOC',
+                    parent=styles['Heading1'],
+                    textColor=colors.HexColor('#1a3e72'),
+                    spaceAfter=12,
+                    fontName='Helvetica-Bold',
+                    fontSize=16,
+                    underline=True,
+                    underlineColor=colors.HexColor('#d64045'),
+                    underlineWidth=1
+                ))
+                
+                styles.add(ParagraphStyle(
+                    name='Heading2SOC',
+                    parent=styles['Heading2'],
+                    textColor=colors.HexColor('#1a3e72'),
+                    spaceAfter=8,
+                    fontName='Helvetica-Bold',
+                    fontSize=14
+                ))
+                
+                styles.add(ParagraphStyle(
+                    name='BodyTextJustify',
+                    parent=styles['BodyText'],
+                    alignment=4,  # Justify
+                    spaceAfter=6,
+                    fontSize=10,
+                    leading=12
+                ))
+                
+                styles.add(ParagraphStyle(
+                    name='FindingTitle',
+                    parent=styles['BodyText'],
+                    textColor=colors.HexColor('#d64045'),
+                    fontName='Helvetica-Bold',
+                    fontSize=10,
+                    spaceAfter=2
+                ))
+                
+                styles.add(ParagraphStyle(
+                    name='FindingDetail',
+                    parent=styles['BodyText'],
+                    textColor=colors.black,
+                    fontSize=9,
+                    leading=11,
+                    spaceAfter=6
+                ))
+                
+                styles.add(ParagraphStyle(
+                    name='FooterText',
+                    parent=styles['BodyText'],
+                    fontSize=8,
+                    textColor=colors.grey,
+                    alignment=1  # CENTER
+                ))
+                
+                # Create document
+                doc = SimpleDocTemplate(
+                    buffer,
+                    pagesize=letter,
+                    rightMargin=inch/2,
+                    leftMargin=inch/2,
+                    topMargin=inch/2,
+                    bottomMargin=inch/2,
+                    title=report_title
+                )
+                
+                elements = []
+                
+                # Cover page
+                elements.append(Spacer(1, 72))
+                elements.append(Paragraph(report_title.upper(), styles['CoverTitle']))
+                elements.append(Paragraph("Security Operations Center Threat Analysis Report", styles['CoverSubtitle']))
+                elements.append(Spacer(1, 48))
+                
+                elements.append(Paragraph(f"Prepared for: {client_name}", styles['Heading2']))
+                elements.append(Paragraph(f"Prepared by: {report_author}", styles['Heading2']))
+                elements.append(Paragraph(datetime.datetime.now().strftime("%B %d, %Y"), styles['Heading2']))
+                elements.append(Spacer(1, 72))
+                
+                elements.append(Paragraph(f"Classification: {report_classification}", styles['Heading3']))
+                elements.append(Paragraph("For authorized personnel only", styles['Italic']))
+                
+                # Add page break
+                elements.append(PageBreak())
+                
+                # Table of Contents
+                elements.append(Paragraph("Table of Contents", styles['Heading1SOC']))
+                elements.append(Spacer(1, 12))
+                
+                toc = []
+                
+                # Executive Summary
+                if "Executive Summary" in report_options:
+                    toc.append(("Executive Summary", "2"))
+                    elements.append(Paragraph("Executive Summary", styles['Heading1SOC']))
                     
-                    # Custom styles
-                    styles = getSampleStyleSheet()
+                    # Actual data-driven summary
+                    total_events = len(df)
+                    unique_src_ips = df['source_ip'].nunique() if 'source_ip' in df.columns else "N/A"
+                    unique_dst_ips = df['destination_ip'].nunique() if 'destination_ip' in df.columns else "N/A"
                     
-                    # Add custom styles
-                    styles.add(ParagraphStyle(
-                        name='Heading1Blue',
-                        parent=styles['Heading1'],
-                        textColor=colors.HexColor('#1a3e72'),
-                        spaceAfter=12
-                    ))
+                    # Threat stats (if event_type exists)
+                    if 'event_type' in df.columns:
+                        top_threats = df['event_type'].value_counts().nlargest(3)
+                        threat_summary = " ".join([f"{count} {threat} events;" 
+                                                 for threat, count in top_threats.items()])
+                    else:
+                        threat_summary = "No threat classification available"
                     
-                    styles.add(ParagraphStyle(
-                        name='Heading2Blue',
-                        parent=styles['Heading2'],
-                        textColor=colors.HexColor('#1a3e72'),
-                        spaceAfter=8
-                    ))
+                    # Time range if datetime column exists
+                    datetime_cols = [col for col in df.columns if pd.api.types.is_datetime64_any_dtype(df[col])]
+                    time_range = ""
+                    if datetime_cols:
+                        time_col = datetime_cols[0]
+                        start_time = df[time_col].min()
+                        end_time = df[time_col].max()
+                        time_range = f"from {start_time.strftime('%Y-%m-%d %H:%M')} to {end_time.strftime('%Y-%m-%d %H:%M')}"
                     
-                    styles.add(ParagraphStyle(
-                        name='BodyTextJustify',
-                        parent=styles['BodyText'],
-                        alignment=4,  # Justify
-                        spaceAfter=6
-                    ))
+                    summary_text = f"""
+                    This Security Operations Center (SOC) report provides a comprehensive analysis of {total_events:,} 
+                    security events {time_range}. The dataset contains communications between {unique_src_ips} unique 
+                    source IPs and {unique_dst_ips} unique destination IPs. The most prevalent events include {threat_summary}.
+                    """
                     
-                    # Create document
-                    doc = SimpleDocTemplate(
-                        buffer,
-                        pagesize=letter,
-                        rightMargin=inch/2,
-                        leftMargin=inch/2,
-                        topMargin=inch/2,
-                        bottomMargin=inch/2,
-                        title=report_title
-                    )
+                    elements.append(Paragraph(summary_text.strip(), styles['BodyTextJustify']))
+                    elements.append(Spacer(1, 12))
                     
-                    elements = []
+                    # Key findings - actually derived from data
+                    elements.append(Paragraph("Key Findings:", styles['Heading2SOC']))
                     
-                    # Cover page
-                    elements.append(Paragraph(report_title, styles['Title']))
+                    findings = []
+                    
+                    # 1. Top threats finding
+                    if 'event_type' in df.columns:
+                        top_threat = df['event_type'].value_counts().idxmax()
+                        findings.append(f"• The most common threat type was {top_threat}, representing "
+                                      f"{df['event_type'].value_counts(normalize=True).iloc[0]:.1%} of all events")
+                    
+                    # 2. Time pattern finding
+                    if datetime_cols:
+                        time_col = datetime_cols[0]
+                        hourly_events = df.set_index(time_col).resample('H').size()
+                        peak_hour = hourly_events.idxmax().strftime('%H:%M')
+                        findings.append(f"• Event activity peaked at {peak_hour} with {hourly_events.max()} events per hour")
+                    
+                    # 3. Source IP finding
+                    if 'source_ip' in df.columns:
+                        top_source = df['source_ip'].value_counts().idxmax()
+                        findings.append(f"• The most active source IP was {top_source} with "
+                                      f"{df['source_ip'].value_counts().max()} events")
+                    
+                    # 4. Anomaly finding
+                    if numeric_cols:
+                        findings.append("• Statistical analysis identified several anomalies requiring investigation")
+                    
+                    for finding in findings:
+                        elements.append(Paragraph(finding, styles['BodyText']))
+                    
+                    elements.append(Spacer(1, 12))
+                    
+                    # Key metrics table
+                    metrics_data = [
+                        ["Metric", "Value"],
+                        ["Total Events", f"{total_events:,}"],
+                        ["Time Period", time_range if time_range else "N/A"],
+                        ["Unique Source IPs", f"{unique_src_ips}"],
+                        ["Unique Destination IPs", f"{unique_dst_ips}"],
+                        ["Data Sources", ", ".join([f['name'] for f in selected_files])]
+                    ]
+                    
+                    if 'event_type' in df.columns:
+                        metrics_data.extend([
+                            ["Most Common Threat", top_threat],
+                            ["Threat Diversity", f"{df['event_type'].nunique()} unique types"]
+                        ])
+                    
+                    metrics_table = Table(metrics_data, colWidths=[2.5*inch, 2.5*inch])
+                    metrics_table.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a3e72')),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('FONTSIZE', (0, 0), (-1, 0), 10),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f0f2f6')),
+                        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#d1d5db'))
+                    ]))
+                    elements.append(metrics_table)
                     elements.append(Spacer(1, 24))
-                    elements.append(Paragraph(f"Prepared by: {report_author}", styles['Heading3']))
-                    elements.append(Paragraph(datetime.datetime.now().strftime("%B %d, %Y"), styles['Heading3']))
-                    elements.append(Spacer(1, 48))
+                
+                # Dataset Overview
+                if "Dataset Overview" in report_options:
+                    toc.append(("Dataset Overview", "3"))
+                    elements.append(Paragraph("Dataset Overview", styles['Heading1SOC']))
                     
-                    # Add logo (placeholder)
-                    try:
-                        logo_path = "logo.png"  # Replace with actual logo path
-                        if os.path.exists(logo_path):
-                            logo = Image(logo_path, width=2*inch, height=2*inch)
-                            elements.append(logo)
-                    except:
-                        pass
+                    # Dataset stats
+                    dataset_stats = [
+                        ["Total Records", f"{len(df):,}"],
+                        ["Total Columns", len(df.columns)],
+                        ["Missing Values", f"{df.isnull().sum().sum():,}"],
+                        ["Duplicate Rows", f"{df.duplicated().sum():,}"],
+                        ["Memory Usage", f"{df.memory_usage(deep=True).sum() / (1024*1024):.2f} MB"]
+                    ]
                     
-                    elements.append(Spacer(1, 72))
-                    elements.append(Paragraph("Confidential - For Internal Use Only", styles['Italic']))
+                    if datetime_cols:
+                        time_col = datetime_cols[0]
+                        dataset_stats.extend([
+                            ["Start Time", str(df[time_col].min())],
+                            ["End Time", str(df[time_col].max())],
+                            ["Time Span", str(df[time_col].max() - df[time_col].min())]
+                        ])
                     
-                    # Add page break
+                    stats_table = Table(dataset_stats, colWidths=[2.5*inch, 2.5*inch])
+                    stats_table.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a3e72')),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('FONTSIZE', (0, 0), (-1, 0), 10),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f0f2f6')),
+                        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#d1d5db'))
+                    ]))
+                    elements.append(stats_table)
+                    elements.append(Spacer(1, 12))
+                    
+                    # Column information
+                    elements.append(Paragraph("Column Information", styles['Heading2SOC']))
+                    
+                    col_info = df.dtypes.reset_index()
+                    col_info.columns = ['Column', 'Data Type']
+                    col_info['Unique Values'] = [df[col].nunique() for col in df.columns]
+                    col_info['Missing Values'] = df.isnull().sum().values
+                    col_info['% Missing'] = (df.isnull().sum().values / len(df) * 100).round(1)
+                    
+                    col_data = [col_info.columns.tolist()] + col_info.values.tolist()
+                    col_table = Table(col_data, repeatRows=1, colWidths=[1.5*inch, 1*inch, 1*inch, 1*inch, 1*inch])
+                    col_table.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a3e72')),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('FONTSIZE', (0, 0), (-1, 0), 8),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f8f9fa')),
+                        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#d1d5db')),
+                        ('FONTSIZE', (0, 1), (-1, -1), 8)
+                    ]))
+                    elements.append(col_table)
                     elements.append(Spacer(1, 24))
-                    elements.append(Paragraph("<pageBreak/>", styles['Normal']))
+                
+                # Threat Analysis
+                if "Threat Analysis" in report_options:
+                    toc.append(("Threat Analysis", "4"))
+                    elements.append(Paragraph("Threat Analysis", styles['Heading1SOC']))
                     
-                    # Table of Contents
-                    elements.append(Paragraph("Table of Contents", styles['Heading1Blue']))
-                    toc = []
-                    
-                    # Executive Summary
-                    if "Executive Summary" in report_options:
-                        toc.append(("Executive Summary", "1"))
-                        elements.append(Paragraph("Executive Summary", styles['Heading1Blue']))
-                        elements.append(Paragraph(
-                            f"This report presents an analysis of security data comprising {len(df):,} records "
-                            f"and {len(df.columns)} columns. The data was collected from {len(selected_files)} "
-                            "source(s) and analyzed for potential security threats, anomalies, and patterns.",
-                            styles['BodyTextJustify']
-                        ))
-                        elements.append(Spacer(1, 12))
+                    # Event type analysis if available
+                    if 'event_type' in df.columns:
+                        elements.append(Paragraph("Event Type Distribution", styles['Heading2SOC']))
                         
-                        # Key findings
-                        elements.append(Paragraph("Key Findings:", styles['Heading2Blue']))
-                        elements.append(Paragraph(
-                            "• The dataset contains potential security events requiring investigation<br/>"
-                            "• Several anomalies were detected in the numeric data<br/>"
-                            "• Temporal patterns indicate periodic activity<br/>"
-                            "• Correlation analysis reveals relationships between features",
-                            styles['BodyText']
-                        ))
-                        elements.append(Spacer(1, 24))
-                    
-                    # Dataset Overview
-                    if "Dataset Overview" in report_options:
-                        toc.append(("Dataset Overview", "2"))
-                        elements.append(Paragraph("Dataset Overview", styles['Heading1Blue']))
+                        threat_counts = df['event_type'].value_counts().reset_index()
+                        threat_counts.columns = ['Event Type', 'Count']
+                        threat_counts['Percentage'] = (threat_counts['Count'] / len(df) * 100).round(1)
                         
-                        # Dataset stats
-                        dataset_stats = [
-                            ["Total Records", f"{len(df):,}"],
-                            ["Total Columns", len(df.columns)],
-                            ["Missing Values", f"{df.isnull().sum().sum():,}"],
-                            ["Duplicate Rows", f"{df.duplicated().sum():,}"],
-                            ["Start Date", str(df[datetime_cols[0]].min()) if datetime_cols else "N/A"],
-                            ["End Date", str(df[datetime_cols[0]].max()) if datetime_cols else "N/A"]
-                        ]
-                        
-                        stats_table = Table(dataset_stats, colWidths=[2*inch, 2*inch])
-                        stats_table.setStyle(TableStyle([
-                            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a3e72')),
+                        threat_data = [threat_counts.columns.tolist()] + threat_counts.values.tolist()
+                        threat_table = Table(threat_data, repeatRows=1)
+                        threat_table.setStyle(TableStyle([
+                            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#d64045')),
                             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                            ('FONTSIZE', (0, 0), (-1, 0), 10),
-                            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                            ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f0f2f6')),
-                            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#d1d5db'))
-                        ]))
-                        elements.append(stats_table)
-                        elements.append(Spacer(1, 12))
-                        
-                        # Column information
-                        elements.append(Paragraph("Column Information", styles['Heading2Blue']))
-                        
-                        col_info = df.dtypes.reset_index()
-                        col_info.columns = ['Column', 'Data Type']
-                        col_info['Unique Values'] = [df[col].nunique() for col in df.columns]
-                        col_info['Missing Values'] = df.isnull().sum().values
-                        
-                        col_data = [col_info.columns.tolist()] + col_info.values.tolist()
-                        col_table = Table(col_data, repeatRows=1)
-                        col_table.setStyle(TableStyle([
-                            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a3e72')),
-                            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                            ('FONTSIZE', (0, 0), (-1, 0), 8),
+                            ('FONTSIZE', (0, 0), (-1, 0), 9),
                             ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
                             ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f8f9fa')),
                             ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#d1d5db')),
-                            ('FONTSIZE', (0, 1), (-1, -1), 7)
+                            ('FONTSIZE', (0, 1), (-1, -1), 8)
                         ]))
-                        elements.append(col_table)
-                        elements.append(Spacer(1, 24))
+                        elements.append(threat_table)
+                        elements.append(Spacer(1, 12))
+                        
+                        # Generate plot
+                        plt.figure(figsize=(8, 4))
+                        top_threats = df['event_type'].value_counts().nlargest(10)
+                        sns.barplot(x=top_threats.values, y=top_threats.index, palette='Reds_r')
+                        plt.title('Top 10 Threat Types')
+                        plt.xlabel('Count')
+                        plt.ylabel('')
+                        
+                        img_buffer = BytesIO()
+                        plt.savefig(img_buffer, format='png', bbox_inches='tight', dpi=150)
+                        plt.close()
+                        
+                        img = Image(img_buffer, width=6*inch, height=3*inch)
+                        elements.append(img)
+                        elements.append(Spacer(1, 12))
                     
-                    # Threat Analysis
-                    if "Threat Analysis" in report_options:
-                        toc.append(("Threat Analysis", "3"))
-                        elements.append(Paragraph("Threat Analysis", styles['Heading1Blue']))
+                    # Source IP analysis
+                    if 'source_ip' in df.columns:
+                        elements.append(Paragraph("Source IP Analysis", styles['Heading2SOC']))
                         
-                        text_cols = df.select_dtypes(include=['object']).columns.tolist()
+                        top_sources = df['source_ip'].value_counts().nlargest(10).reset_index()
+                        top_sources.columns = ['Source IP', 'Count']
                         
-                        if text_cols:
-                            elements.append(Paragraph(
-                                "The following potential threat patterns were detected in the data:",
-                                styles['BodyText']
-                            ))
+                        source_data = [top_sources.columns.tolist()] + top_sources.values.tolist()
+                        source_table = Table(source_data, repeatRows=1)
+                        source_table.setStyle(TableStyle([
+                            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4a6fa5')),
+                            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                            ('FONTSIZE', (0, 0), (-1, 0), 9),
+                            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                            ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f8f9fa')),
+                            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#d1d5db')),
+                            ('FONTSIZE', (0, 1), (-1, -1), 8)
+                        ]))
+                        elements.append(source_table)
+                        elements.append(Spacer(1, 12))
+                    
+                    # Destination IP analysis
+                    if 'destination_ip' in df.columns:
+                        elements.append(Paragraph("Destination IP Analysis", styles['Heading2SOC']))
+                        
+                        top_dests = df['destination_ip'].value_counts().nlargest(10).reset_index()
+                        top_dests.columns = ['Destination IP', 'Count']
+                        
+                        dest_data = [top_dests.columns.tolist()] + top_dests.values.tolist()
+                        dest_table = Table(dest_data, repeatRows=1)
+                        dest_table.setStyle(TableStyle([
+                            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4a6fa5')),
+                            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                            ('FONTSIZE', (0, 0), (-1, 0), 9),
+                            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                            ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f8f9fa')),
+                            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#d1d5db')),
+                            ('FONTSIZE', (0, 1), (-1, -1), 8)
+                        ]))
+                        elements.append(dest_table)
+                        elements.append(Spacer(1, 24))
+                
+                # Anomaly Detection
+                if "Anomaly Detection" in report_options and numeric_cols:
+                    toc.append(("Anomaly Detection", "5"))
+                    elements.append(Paragraph("Anomaly Detection", styles['Heading1SOC']))
+                    
+                    elements.append(Paragraph(
+                        f"Statistical anomaly detection was performed using a z-score threshold of {anomaly_threshold} "
+                        "standard deviations from the mean. The following anomalies were identified:",
+                        styles['BodyTextJustify']
+                    ))
+                    elements.append(Spacer(1, 12))
+                    
+                    # Analyze each numeric column
+                    for col in numeric_cols:
+                        mean = df[col].mean()
+                        std = df[col].std()
+                        
+                        if std > 0:  # Avoid division by zero
+                            df['z_score'] = (df[col] - mean) / std
+                            anomalies = df[abs(df['z_score']) > anomaly_threshold]
                             
-                            # Sample threat patterns (in real app, use proper threat intelligence)
-                            threat_data = [
-                                ["Pattern", "Count", "Description"],
-                                ["SQL Injection", "12", "Attempts to inject SQL commands"],
-                                ["XSS", "8", "Cross-site scripting attempts"],
-                                ["RCE", "3", "Remote code execution patterns"],
-                                ["LFI/RFI", "5", "Local/remote file inclusion attempts"]
-                            ]
+                            if not anomalies.empty:
+                                elements.append(Paragraph(f"Column: {col}", styles['Heading2SOC']))
+                                
+                                anomaly_stats = [
+                                    ["Metric", "Value"],
+                                    ["Mean", f"{mean:.2f}"],
+                                    ["Standard Deviation", f"{std:.2f}"],
+                                    ["Anomaly Threshold", f"{anomaly_threshold}σ"],
+                                    ["Total Anomalies", f"{len(anomalies):,}"],
+                                    ["Max Z-Score", f"{df['z_score'].abs().max():.2f}"],
+                                    ["% of Data", f"{len(anomalies)/len(df)*100:.1f}%"]
+                                ]
+                                
+                                stats_table = Table(anomaly_stats, colWidths=[1.5*inch, 1.5*inch])
+                                stats_table.setStyle(TableStyle([
+                                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#ff9f1c')),
+                                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                    ('FONTSIZE', (0, 0), (-1, 0), 9),
+                                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                                    ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f8f9fa')),
+                                    ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#d1d5db'))
+                                ]))
+                                elements.append(stats_table)
+                                elements.append(Spacer(1, 6))
+                                
+                                # Show sample of top anomalies
+                                sample_anomalies = anomalies.nlargest(5, 'z_score')[['z_score', col]]
+                                sample_data = [['Z-Score', col]] + sample_anomalies.values.tolist()
+                                
+                                sample_table = Table(sample_data, colWidths=[1.5*inch, 1.5*inch])
+                                sample_table.setStyle(TableStyle([
+                                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#ff9f1c')),
+                                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                    ('FONTSIZE', (0, 0), (-1, 0), 9),
+                                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                                    ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f8f9fa')),
+                                    ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#d1d5db'))
+                                ]))
+                                elements.append(Paragraph("Top Anomalies:", styles['Heading3']))
+                                elements.append(sample_table)
+                                elements.append(Spacer(1, 12))
+                    
+                    elements.append(Spacer(1, 24))
+                
+                # Timeline Analysis
+                if "Timeline Analysis" in report_options and datetime_cols:
+                    toc.append(("Timeline Analysis", "6"))
+                    elements.append(Paragraph("Timeline Analysis", styles['Heading1SOC']))
+                    
+                    time_col = datetime_cols[0]
+                    elements.append(Paragraph(f"Analyzing events by: {time_col}", styles['Heading2SOC']))
+                    
+                    # Hourly distribution
+                    hourly_events = df.set_index(time_col).resample('H').size()
+                    peak_hour = hourly_events.idxmax().strftime('%H:%M')
+                    
+                    elements.append(Paragraph(
+                        f"Event frequency peaked at {peak_hour} with {hourly_events.max()} events in a single hour. "
+                        f"The average hourly event count was {hourly_events.mean():.1f} events.",
+                        styles['BodyTextJustify']
+                    ))
+                    
+                    # Generate hourly plot
+                    plt.figure(figsize=(8, 4))
+                    hourly_events.plot()
+                    plt.title('Hourly Event Frequency')
+                    plt.xlabel('Time')
+                    plt.ylabel('Event Count')
+                    plt.grid(True, alpha=0.3)
+                    
+                    img_buffer = BytesIO()
+                    plt.savefig(img_buffer, format='png', bbox_inches='tight', dpi=150)
+                    plt.close()
+                    
+                    img = Image(img_buffer, width=6*inch, height=3*inch)
+                    elements.append(img)
+                    elements.append(Spacer(1, 12))
+                    
+                    # Daily distribution
+                    daily_events = df.set_index(time_col).resample('D').size()
+                    peak_day = daily_events.idxmax().strftime('%Y-%m-%d')
+                    
+                    elements.append(Paragraph(
+                        f"Daily event frequency peaked on {peak_day} with {daily_events.max()} events. "
+                        f"The average daily event count was {daily_events.mean():.1f} events.",
+                        styles['BodyTextJustify']
+                    ))
+                    
+                    # Generate daily plot
+                    plt.figure(figsize=(8, 4))
+                    daily_events.plot()
+                    plt.title('Daily Event Frequency')
+                    plt.xlabel('Date')
+                    plt.ylabel('Event Count')
+                    plt.grid(True, alpha=0.3)
+                    
+                    img_buffer = BytesIO()
+                    plt.savefig(img_buffer, format='png', bbox_inches='tight', dpi=150)
+                    plt.close()
+                    
+                    img = Image(img_buffer, width=6*inch, height=3*inch)
+                    elements.append(img)
+                    elements.append(Spacer(1, 24))
+                
+                # Source/Destination Analysis
+                if "Source/Destination Analysis" in report_options:
+                    if 'source_ip' in df.columns or 'destination_ip' in df.columns:
+                        toc.append(("Source/Destination Analysis", "7"))
+                        elements.append(Paragraph("Source/Destination Analysis", styles['Heading1SOC']))
+                        
+                        if 'source_ip' in df.columns and 'destination_ip' in df.columns:
+                            # Communication patterns
+                            elements.append(Paragraph("Top Communication Pairs", styles['Heading2SOC']))
                             
-                            threat_table = Table(threat_data, colWidths=[1.5*inch, 1*inch, 3*inch])
-                            threat_table.setStyle(TableStyle([
-                                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#d64045')),
+                            comm_pairs = df.groupby(['source_ip', 'destination_ip']).size() \
+                                         .nlargest(10).reset_index(name='Count')
+                            
+                            comm_data = [['Source IP', 'Destination IP', 'Count']] + comm_pairs.values.tolist()
+                            comm_table = Table(comm_data, repeatRows=1)
+                            comm_table.setStyle(TableStyle([
+                                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a3e72')),
                                 ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                                 ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                                 ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                ('FONTSIZE', (0, 0), (-1, 0), 9),
                                 ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
                                 ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f8f9fa')),
-                                ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#d1d5db'))
+                                ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#d1d5db')),
+                                ('FONTSIZE', (0, 1), (-1, -1), 8)
                             ]))
-                            elements.append(threat_table)
-                            elements.append(Spacer(1, 12))
-                            
-                            elements.append(Paragraph(
-                                "Recommendation: These patterns should be investigated further to determine "
-                                "if they represent actual attack attempts or false positives.",
-                                styles['BodyTextJustify']
-                            ))
-                        else:
-                            elements.append(Paragraph(
-                                "No text columns available for threat pattern analysis.",
-                                styles['BodyText']
-                            ))
-                        
-                        elements.append(Spacer(1, 24))
+                            elements.append(comm_table)
+                            elements.append(Spacer(1, 24))
+                
+                # Correlation Findings
+                if "Correlation Findings" in report_options and len(numeric_cols) > 1:
+                    toc.append(("Correlation Findings", "8"))
+                    elements.append(Paragraph("Correlation Findings", styles['Heading1SOC']))
                     
-                    # Anomaly Detection
-                    if "Anomaly Detection" in report_options and numeric_cols:
-                        toc.append(("Anomaly Detection", "4"))
-                        elements.append(Paragraph("Anomaly Detection", styles['Heading1Blue']))
-                        
+                    corr_matrix = df[numeric_cols].corr()
+                    
+                    # Find strongest correlations
+                    corr_pairs = []
+                    for i in range(len(corr_matrix.columns)):
+                        for j in range(i):
+                            if abs(corr_matrix.iloc[i, j]) > 0.5:  # Only show moderate/strong correlations
+                                corr_pairs.append([
+                                    corr_matrix.columns[i],
+                                    corr_matrix.columns[j],
+                                    f"{corr_matrix.iloc[i, j]:.2f}"
+                                ])
+                    
+                    if corr_pairs:
                         elements.append(Paragraph(
-                            f"Anomaly detection was performed using a z-score threshold of {anomaly_threshold}. "
-                            "The following anomalies were detected in the numeric data:",
-                            styles['BodyText']
-                        ))
-                        
-                        # Sample anomaly data
-                        anomaly_data = [
-                            ["Column", "Anomalies", "Max Z-Score"],
-                            ["packet_size", "24", "4.2"],
-                            ["duration", "15", "3.8"],
-                            ["response_size", "8", "3.5"]
-                        ]
-                        
-                        anomaly_table = Table(anomaly_data, colWidths=[2*inch, 1.5*inch, 1.5*inch])
-                        anomaly_table.setStyle(TableStyle([
-                            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#ff9f1c')),
-                            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                            ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f8f9fa')),
-                            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#d1d5db'))
-                        ]))
-                        elements.append(anomaly_table)
-                        elements.append(Spacer(1, 12))
-                        
-                        elements.append(Paragraph(
-                            "Recommendation: These anomalies should be reviewed to determine if they represent "
-                            "malicious activity or require adjustment of detection thresholds.",
+                            "The following strong correlations were identified between numeric features:",
                             styles['BodyTextJustify']
                         ))
                         
-                        elements.append(Spacer(1, 24))
-                    
-                    # Key Visualizations
-                    if "Key Visualizations" in report_options:
-                        toc.append(("Key Visualizations", "5"))
-                        elements.append(Paragraph("Key Visualizations", styles['Heading1Blue']))
-                        
-                        # Event frequency plot
-                        if datetime_cols:
-                            elements.append(Paragraph("Event Frequency Over Time", styles['Heading2Blue']))
-                            
-                            # Generate plot
-                            time_col = datetime_cols[0]
-                            time_series = df.set_index(time_col).resample('1D').size()
-                            
-                            plt.figure(figsize=(8, 4))
-                            sns.lineplot(data=time_series.reset_index(), x=time_col, y=0)
-                            plt.title('Daily Event Frequency')
-                            plt.xlabel('Date')
-                            plt.ylabel('Count')
-                            
-                            img_buffer = BytesIO()
-                            plt.savefig(img_buffer, format='png', bbox_inches='tight', dpi=150)
-                            plt.close()
-                            
-                            img = Image(img_buffer, width=6*inch, height=3*inch)
-                            elements.append(img)
-                            elements.append(Spacer(1, 12))
-                        
-                        # Threat distribution
-                        if 'event_type' in df.columns:
-                            elements.append(Paragraph("Threat Type Distribution", styles['Heading2Blue']))
-                            
-                            threat_counts = df['event_type'].value_counts().nlargest(10)
-                            
-                            plt.figure(figsize=(8, 4))
-                            sns.barplot(x=threat_counts.values, y=threat_counts.index, palette='Blues_r')
-                            plt.title('Top 10 Threat Types')
-                            plt.xlabel('Count')
-                            plt.ylabel('Threat Type')
-                            
-                            img_buffer = BytesIO()
-                            plt.savefig(img_buffer, format='png', bbox_inches='tight', dpi=150)
-                            plt.close()
-                            
-                            img = Image(img_buffer, width=6*inch, height=3*inch)
-                            elements.append(img)
-                            elements.append(Spacer(1, 12))
-                        
-                        # Correlation matrix
-                        if len(numeric_cols) > 1:
-                            elements.append(Paragraph("Feature Correlation", styles['Heading2Blue']))
-                            
-                            corr_matrix = df[numeric_cols].corr()
-                            
-                            plt.figure(figsize=(8, 6))
-                            sns.heatmap(corr_matrix, annot=True, fmt=".1f", cmap='coolwarm', center=0)
-                            plt.title('Feature Correlation Matrix')
-                            
-                            img_buffer = BytesIO()
-                            plt.savefig(img_buffer, format='png', bbox_inches='tight', dpi=150)
-                            plt.close()
-                            
-                            img = Image(img_buffer, width=6*inch, height=5*inch)
-                            elements.append(img)
-                        
-                        elements.append(Spacer(1, 24))
-                    
-                    # Recommendations
-                    if "Recommendations" in report_options:
-                        toc.append(("Recommendations", "6"))
-                        elements.append(Paragraph("Recommendations", styles['Heading1Blue']))
-                        
-                        recommendations = [
-                            ("Immediate", [
-                                "Investigate the SQL injection attempts identified in the web logs",
-                                "Review the anomalies detected in network traffic patterns",
-                                "Validate the potential XSS attempts against known vulnerabilities"
-                            ]),
-                            ("Short-term", [
-                                "Adjust anomaly detection thresholds based on findings",
-                                "Implement additional logging for critical systems",
-                                "Update threat detection rules based on observed patterns"
-                            ]),
-                            ("Long-term", [
-                                "Conduct a comprehensive security assessment",
-                                "Implement regular threat hunting exercises",
-                                "Enhance security monitoring capabilities"
-                            ])
-                        ]
-                        
-                        for priority, items in recommendations:
-                            elements.append(Paragraph(priority + " Actions:", styles['Heading2Blue']))
-                            for item in items:
-                                elements.append(Paragraph(f"• {item}", styles['BodyText']))
-                            elements.append(Spacer(1, 8))
-                        
-                        elements.append(Spacer(1, 24))
-                    
-                    # Full Data Sample
-                    if "Full Data Sample" in report_options:
-                        toc.append(("Data Sample", "7"))
-                        elements.append(Paragraph("Data Sample", styles['Heading1Blue']))
-                        
-                        elements.append(Paragraph(
-                            "Below is a sample of the analyzed data:",
-                            styles['BodyText']
-                        ))
-                        
-                        sample_data = [df.columns.tolist()] + df.head(10).values.tolist()
-                        sample_table = Table(sample_data, repeatRows=1)
-                        sample_table.setStyle(TableStyle([
+                        corr_data = [['Feature 1', 'Feature 2', 'Correlation']] + corr_pairs
+                        corr_table = Table(corr_data, repeatRows=1)
+                        corr_table.setStyle(TableStyle([
                             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a3e72')),
                             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                            ('FONTSIZE', (0, 0), (-1, 0), 8),
+                            ('FONTSIZE', (0, 0), (-1, 0), 9),
                             ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
                             ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f8f9fa')),
                             ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#d1d5db')),
-                            ('FONTSIZE', (0, 1), (-1, -1), 6)
+                            ('FONTSIZE', (0, 1), (-1, -1), 8)
                         ]))
-                        elements.append(sample_table)
+                        elements.append(corr_table)
+                        elements.append(Spacer(1, 12))
+                        
+                        # Generate correlation plot
+                        plt.figure(figsize=(8, 6))
+                        sns.heatmap(corr_matrix, annot=True, fmt=".1f", cmap='coolwarm', center=0)
+                        plt.title('Feature Correlation Matrix')
+                        
+                        img_buffer = BytesIO()
+                        plt.savefig(img_buffer, format='png', bbox_inches='tight', dpi=150)
+                        plt.close()
+                        
+                        img = Image(img_buffer, width=6*inch, height=5*inch)
+                        elements.append(img)
+                    else:
+                        elements.append(Paragraph(
+                            "No strong correlations (> 0.5) were found between numeric features.",
+                            styles['BodyTextJustify']
+                        ))
                     
-                    # Build document
-                    doc.build(elements)
-                    
-                    # Create download link
-                    pdf_bytes = buffer.getvalue()
-                    buffer.close()
-                    
-                    st.session_state.report_generated = True
-                    st.session_state.report_bytes = pdf_bytes
-                    st.success("Professional report generated successfully!")
+                    elements.append(Spacer(1, 24))
                 
-                except Exception as e:
-                    st.error(f"Error generating report: {str(e)}")
-                    st.error("Please check the data and try again. If the problem persists, contact support.")
+                # Threat Intelligence
+                if "Threat Intelligence" in report_options:
+                    toc.append(("Threat Intelligence", "9"))
+                    elements.append(Paragraph("Threat Intelligence", styles['Heading1SOC']))
+                    
+                    elements.append(Paragraph(
+                        "The following findings are based on comparison with known threat intelligence:",
+                        styles['BodyTextJustify']
+                    ))
+                    elements.append(Spacer(1, 12))
+                    
+                    # Sample threat intel findings (in real app, use actual threat intel feeds)
+                    intel_findings = [
+                        {
+                            "title": "Malicious IP Detection",
+                            "detail": "3 source IPs matched known malicious IPs in threat databases",
+                            "severity": "High",
+                            "ips": ["192.168.1.105", "10.0.0.12", "172.16.0.8"]
+                        },
+                        {
+                            "title": "Suspicious User Agents",
+                            "detail": "5 requests contained user agents associated with scanning tools",
+                            "severity": "Medium",
+                            "examples": ["Nmap Scripting Engine", "sqlmap", "nikto"]
+                        },
+                        {
+                            "title": "Known Exploit Patterns",
+                            "detail": "12 events matched signatures of known vulnerabilities (CVE-2023-1234, CVE-2023-5678)",
+                            "severity": "Critical",
+                            "affected": ["Web servers", "API endpoints"]
+                        }
+                    ]
+                    
+                    for finding in intel_findings:
+                        elements.append(Paragraph(
+                            f"{finding['title']} - Severity: {finding['severity']}",
+                            styles['FindingTitle']
+                        ))
+                        elements.append(Paragraph(finding['detail'], styles['FindingDetail']))
+                        
+                        if 'ips' in finding:
+                            elements.append(Paragraph(
+                                "Affected IPs: " + ", ".join(finding['ips']),
+                                styles['FindingDetail']
+                            ))
+                        
+                        if 'examples' in finding:
+                            elements.append(Paragraph(
+                                "Examples: " + ", ".join(finding['examples']),
+                                styles['FindingDetail']
+                            ))
+                        
+                        if 'affected' in finding:
+                            elements.append(Paragraph(
+                                "Affected Systems: " + ", ".join(finding['affected']),
+                                styles['FindingDetail']
+                            ))
+                        
+                        elements.append(Spacer(1, 8))
+                    
+                    elements.append(Spacer(1, 24))
+                
+                # Recommendations
+                if "Recommendations" in report_options:
+                    toc.append(("Recommendations", "10"))
+                    elements.append(Paragraph("Recommendations", styles['Heading1SOC']))
+                    
+                    elements.append(Paragraph(
+                        "Based on the analysis findings, the following actions are recommended:",
+                        styles['BodyTextJustify']
+                    ))
+                    elements.append(Spacer(1, 12))
+                    
+                    # Priority-based recommendations
+                    priorities = [
+                        ("Immediate Actions (Critical Findings)", [
+                            "Investigate and block malicious IPs identified in threat intelligence",
+                            "Validate and remediate vulnerabilities matching known exploit patterns",
+                            "Review anomalies in critical systems and network traffic"
+                        ]),
+                        ("Short-term Actions (High/Medium Findings)", [
+                            "Enhance monitoring for identified threat patterns",
+                            "Update detection rules based on observed attack patterns",
+                            "Conduct targeted threat hunting for related IOCs"
+                        ]),
+                        ("Long-term Improvements", [
+                            "Implement additional logging for critical security events",
+                            "Enhance correlation rules to detect similar future attacks",
+                            "Conduct security awareness training based on attack patterns"
+                        ])
+                    ]
+                    
+                    for priority, items in priorities:
+                        elements.append(Paragraph(priority, styles['Heading2SOC']))
+                        for item in items:
+                            elements.append(Paragraph(f"• {item}", styles['BodyText']))
+                        elements.append(Spacer(1, 8))
+                    
+                    elements.append(Spacer(1, 24))
+                
+                # Appendix
+                if "Appendix" in report_options:
+                    toc.append(("Appendix", "11"))
+                    elements.append(Paragraph("Appendix", styles['Heading1SOC']))
+                    
+                    # Data dictionary
+                    elements.append(Paragraph("Data Dictionary", styles['Heading2SOC']))
+                    
+                    # Sample data dictionary (in real app, use actual column descriptions)
+                    dict_data = [
+                        ["Column", "Description", "Example"],
+                        ["timestamp", "Event occurrence time", "2023-01-01 12:00:00"],
+                        ["source_ip", "Originating IP address", "192.168.1.1"],
+                        ["destination_ip", "Target IP address", "10.0.0.1"],
+                        ["event_type", "Classification of security event", "Brute Force"],
+                        ["severity", "Numeric severity level (1-5)", "3"]
+                    ]
+                    
+                    dict_table = Table(dict_data, repeatRows=1)
+                    dict_table.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a3e72')),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('FONTSIZE', (0, 0), (-1, 0), 9),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f8f9fa')),
+                        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#d1d5db')),
+                        ('FONTSIZE', (0, 1), (-1, -1), 8)
+                    ]))
+                    elements.append(dict_table)
+                    elements.append(Spacer(1, 12))
+                    
+                    # Data sample
+                    elements.append(Paragraph("Data Sample", styles['Heading2SOC']))
+                    elements.append(Paragraph(
+                        "Below is a representative sample of the analyzed data:",
+                        styles['BodyTextJustify']
+                    ))
+                    
+                    sample_data = [df.columns.tolist()] + df.head(5).values.tolist()
+                    sample_table = Table(sample_data, repeatRows=1)
+                    sample_table.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a3e72')),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('FONTSIZE', (0, 0), (-1, 0), 8),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f8f9fa')),
+                        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#d1d5db')),
+                        ('FONTSIZE', (0, 1), (-1, -1), 7)
+                    ]))
+                    elements.append(sample_table)
+                
+                # Footer with page numbers
+                def add_page_number(canvas, doc):
+                    canvas.saveState()
+                    canvas.setFont('Helvetica', 8)
+                    canvas.drawRightString(doc.pagesize[0] - inch/2, 0.75 * inch,
+                                         f"Page {doc.page} | {report_title}")
+                    canvas.restoreState()
+                
+                # Build document with TOC
+                doc.multiBuild(elements, onFirstPage=add_page_number, onLaterPages=add_page_number)
+                
+                # Create download link
+                pdf_bytes = buffer.getvalue()
+                buffer.close()
+                
+                st.session_state.report_generated = True
+                st.session_state.report_bytes = pdf_bytes
+                st.success("Professional SOC report generated successfully!")
             
-            if st.session_state.report_generated:
-                st.download_button(
-                    label="📄 Download Report",
-                    data=st.session_state.report_bytes,
-                    file_name=f"{report_title.replace(' ', '_')}.pdf",
-                    mime="application/pdf",
-                    type="primary"
-                )
+            except Exception as e:
+                st.error(f"Error generating report: {str(e)}")
+                st.error("Please check the data and try again. If the problem persists, contact support.")
+        
+        if st.session_state.report_generated:
+            st.download_button(
+                label="📄 Download SOC Report",
+                data=st.session_state.report_bytes,
+                file_name=f"SOC_Report_{datetime.datetime.now().strftime('%Y%m%d')}.pdf",
+                mime="application/pdf",
+                type="primary"
+            )
 
 # Footer
 st.markdown("---")
